@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Inicia o cron em foreground para que continue rodando
+# Start cron in the foreground so it keeps running
 cron -f &
 
-# Executa o script uma vez no início para evitar esperar o cron rodar
+# Run the script once at startup to avoid waiting for cron to trigger
 python3 /check_services.py
 
-# Mantém o NGINX rodando no foreground
+# Keep NGINX running in the foreground
 nginx -g 'daemon off;'

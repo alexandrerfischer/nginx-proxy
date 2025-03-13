@@ -6,7 +6,7 @@ import subprocess
 NGINX_CONF_PATH = "/etc/nginx/nginx.conf"
 OUTPUT_JSON_PATH = "/usr/share/nginx/html/services.json"
 
-# Mapeamento de códigos HTTP para mensagens
+# HTTP status code mapping
 HTTP_STATUS_MESSAGES = {
     200: "OK",
     201: "Created",
@@ -23,28 +23,28 @@ HTTP_STATUS_MESSAGES = {
     503: "Service Unavailable",
 }
 
-# Expressão regular corrigida para capturar múltiplos serviços corretamente
+# Fixed regex pattern to correctly capture multiple services
 pattern = re.compile(r"location\s+/([\w-]+)/\s*\{[^}]*?proxy_pass\s+(http://[\w\.-]+)", re.DOTALL)
 
 def get_services():
-    """ Lê arquivos de configuração do NGINX e retorna os serviços configurados. """
+    """ Reads NGINX configuration files and returns the configured services. """
     services = []
     conf_files = [NGINX_CONF_PATH] + glob.glob("/etc/nginx/conf.d/*.conf") + glob.glob("/etc/nginx/sites-enabled/*")
 
     for conf_file in conf_files:
         with open(conf_file, "r") as f:
-            content = f.read()  # Lê o arquivo inteiro
-            matches = pattern.findall(content)  # Encontra todas as correspondências
+            content = f.read()  # Read the entire file
+            matches = pattern.findall(content)  # Find all matches
 
             for name, url in matches:
-                services.append((name, url))  # Adiciona todos os serviços encontrados
+                services.append((name, url))  # Add all found services
 
     return services
 
 def check_service(url):
-    """ Testa o serviço com curl e retorna o código HTTP e a mensagem correspondente. """
+    """ Tests the service using curl and returns the HTTP status code and message. """
     if url.endswith("/"):
-        url = url[:-1]  # Remove a barra final
+        url = url[:-1]  # Remove the trailing slash
 
     try:
         result = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", url],
@@ -56,7 +56,7 @@ def check_service(url):
         return 0, "Connection Error"
 
 def update_services():
-    """ Atualiza o arquivo JSON com todos os serviços e seus status. """
+    """ Updates the JSON file with all services and their statuses. """
     services = get_services()
     service_status = []
 
@@ -71,7 +71,7 @@ def update_services():
     with open(OUTPUT_JSON_PATH, "w") as f:
         json.dump(service_status, f, indent=4)
 
-    print(f"Atualização concluída! {len(service_status)} serviços verificados.")
+    print(f"Update completed! {len(service_status)} services checked.")
 
 if __name__ == "__main__":
     update_services()
