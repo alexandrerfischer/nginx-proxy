@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NGINX Proxy Reverso</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #007bff; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; }
+        .ok { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>NGINX Proxy Reverso</h1>
+    <p>Lista de serviços monitorados:</p>
+    <ul id="service-list"></ul>
+    <script>
+        fetch('/services.json')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('service-list');
+                list.innerHTML = "";
+                if (data.length === 0) {
+                    list.innerHTML = "<li>Nenhum serviço configurado.</li>";
+                } else {
+                    data.forEach(service => {
+                        const className = service.status.startsWith("200") ? "ok" : "error";
+                        list.innerHTML += `<li class="${className}">${service.name}: ${service.status}</li>`;
+                    });
+                }
+            })
+            .catch(() => {
+                document.getElementById('service-list').innerHTML = "<li>Erro ao carregar serviços.</li>";
+            });
+    </script>
+</body>
+</html>
